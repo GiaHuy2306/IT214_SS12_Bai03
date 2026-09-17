@@ -1,0 +1,29 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: StoreX-PaymentService
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      bankClient:
+        # Loại cửa sổ trượt: Đếm số lượng request (COUNT_BASED)
+        sliding-window-type: COUNT_BASED
+        # Kích thước cửa sổ trượt: 20 request gần nhất
+        sliding-window-size: 20
+        # GIẢI PHÁP KHẮC PHỤC BẪY: Thiết lập số lượng cuộc gọi tối thiểu để bắt đầu tính toán tỷ lệ lỗi
+        # Đảm bảo nguyên tắc: minimumNumberOfCalls (5) >= permittedNumberOfCallsInHalfOpenState (3)
+        minimum-number-of-calls: 5
+        # Ngưỡng tỷ lệ lỗi kích hoạt mở mạch: 50%
+        failure-rate-threshold: 50
+        # Thời gian ngắt mạch ở trạng thái OPEN: 30 giây theo yêu cầu ngân hàng đối tác
+        wait-duration-in-open-state: 30s
+        # Số lượng request trinh sát được phép đi qua khi ở trạng thái HALF_OPEN: 3 request
+        permitted-number-of-calls-in-half-open-state: 3
+        # Tự động chuyển từ OPEN sang HALF_OPEN sau khi hết 30s
+        automatic-transition-from-open-to-half-open-enabled: true
+        # Các ngoại lệ được tính vào tỉ lệ lỗi
+        record-exceptions:
+          - java.lang.Exception
